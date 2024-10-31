@@ -1,12 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"net"
 
-	"github.com/jackytaan/stream/bi-directional-streaming/feeds/feedpb"
+	"github.com/jackytaan/go-grpc-examples/stream/bi-directional-streaming/feeds/feedpb"
 
 	"google.golang.org/grpc"
 )
@@ -17,6 +16,8 @@ func main() {
 	lis, err := net.Listen("tcp", "localhost:50051")
 	if err != nil {
 		log.Fatalf("could not listen: %v", err)
+	} else {
+		log.Println("Server is listening on", "localhost:50051")
 	}
 
 	s := grpc.NewServer()
@@ -29,8 +30,10 @@ func main() {
 
 // Broadcast reads client stream and broadcasts recieved feeds
 func (*server) Broadcast(stream feedpb.Feeds_BroadcastServer) error {
+	iCount := 0
 	for {
 		msg, err := stream.Recv()
+		iCount++
 		if err == io.EOF {
 			return nil
 		}
@@ -38,9 +41,12 @@ func (*server) Broadcast(stream feedpb.Feeds_BroadcastServer) error {
 			log.Fatalf("could not recieve from stream : %v", err)
 			return err
 		}
-
-		feed := "New Feed Recieved: " + msg.GetFeed()
-		fmt.Println("sending new feed...")
+		feed := msg.GetFeed()
+		// fmt.Println("Server recieved: ", feed)
+		//feed = feed + "-" + msg.GetFeed()
+		//fmt.Println("Server sent to client: ", feed)
 		stream.Send(&feedpb.FeedResponse{Feed: feed})
+
 	}
+
 }

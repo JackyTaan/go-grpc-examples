@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/jackytaan/unary/sum/sumpb"
+	"github.com/jackytaan/go-grpc-examples/unary/sum/sumpb"
 	"google.golang.org/grpc"
 )
 

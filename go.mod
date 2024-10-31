@@ -2,7 +2,10 @@ module github.com/jackytaan/go-grpc-examples
 
 go 1.23.2
 
-require google.golang.org/grpc v1.67.1
+require (
+	github.com/golang/protobuf v1.5.0
+	google.golang.org/grpc v1.67.1
+)
 
 require (
 	golang.org/x/net v0.28.0 // indirect

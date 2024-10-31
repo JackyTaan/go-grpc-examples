@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/jackytaan/stream/bi-directional-streaming/feeds/feedpb"
+	"github.com/jackytaan/go-grpc-examples/stream/bi-directional-streaming/feeds/feedpb"
 
 	"google.golang.org/grpc"
 )
@@ -26,17 +26,21 @@ func main() {
 		log.Fatalf("failed to call Broadcast: %v", err)
 	}
 
+	//record time begin sending to streaming server
+	startTime := time.Now()
+	fmt.Println("start at:", startTime)
 	// make blocking channel
 	waitc := make(chan struct{})
 
 	// send feeds to the stream ( go routine )
 	go func() {
-		for i := 1; i <= 5; i++ {
-			feed := "This is feed number " + strconv.Itoa(i)
+		for i := 1; i <= 500000; i++ {
+			feed := strconv.Itoa(i)
+			// fmt.Println("Client send: ", feed)
 			if err := stream.Send(&feedpb.FeedRequest{Feed: feed}); err != nil {
 				log.Fatalf("error while sending feed: %v", err)
 			}
-			time.Sleep(time.Second)
+			//time.Sleep(time.Second)
 		}
 		if err := stream.CloseSend(); err != nil {
 			log.Fatalf("failed to close stream: %v", err)
@@ -46,7 +50,8 @@ func main() {
 	// recieve feeds frrom the stream ( go routine )
 	go func() {
 		for {
-			msg, err := stream.Recv()
+			//msg, err := stream.Recv()
+			_, err := stream.Recv()
 			if err == io.EOF {
 				close(waitc)
 				return
@@ -57,10 +62,17 @@ func main() {
 				return
 			}
 
-			fmt.Println("New feed recieved : ", msg.GetFeed())
+			//fmt.Println("Client recieved: ", msg.GetFeed())
 		}
 
 	}()
 
+	//
 	<-waitc
+	//
+	endTime := time.Now()
+	fmt.Println("end at:", endTime)
+	duration := time.Now().Sub(startTime).Seconds()
+	fmt.Println("total:", duration)
+	//
 }
